@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/jcmturner/gofork/encoding/asn1"
@@ -157,9 +158,9 @@ func (c *Client) Head(url string) (resp *http.Response, err error) {
 
 func respUnauthorizedNegotiate(resp *http.Response) bool {
 	if resp.StatusCode == http.StatusUnauthorized {
-		if resp.Header.Get(HTTPHeaderAuthResponse) == HTTPHeaderAuthResponseValueKey {
-			return true
-		}
+		// custom elastic code: See issue https://github.com/elastic/beats/issues/47110
+		authHeaders := resp.Header.Values(HTTPHeaderAuthResponse)
+		return slices.Contains(authHeaders, HTTPHeaderAuthResponseValueKey)
 	}
 	return false
 }
@@ -300,7 +301,6 @@ func SPNEGOKRB5Authenticate(inner http.Handler, kt *keytab.Keytab, settings ...f
 		}
 		// If we get to here we have not authenticationed so just reject
 		spnegoResponseReject(spnego, w, "%s - SPNEGO Kerberos authentication failed", r.RemoteAddr)
-		return
 	})
 }
 
