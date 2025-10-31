@@ -132,7 +132,7 @@ func (n *NegTokenInit) Verify() (bool, gssapi.Status) {
 		n.mechToken = mt
 	} else {
 		var ok bool
-		mt, ok = n.mechToken.(*KRB5Token)
+		_, ok = n.mechToken.(*KRB5Token)
 		if !ok {
 			return false, gssapi.Status{Code: gssapi.StatusDefectiveToken, Message: "MechToken is not a KRB5 token as expected"}
 		}

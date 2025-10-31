@@ -286,6 +286,32 @@ func TestService_SPNEGOKRB_ReplayCache_Concurrency(t *testing.T) {
 	wg2.Wait()
 }
 
+func TestAuthHeader(t *testing.T) {
+	// server supports multiple auth
+	header := http.Header{}
+	header.Add("WWW-Authenticate", "ApiKey")
+	header.Add("WWW-Authenticate", "Basic realm")
+
+	t.Run("when server does not support kerberos", func(t *testing.T) {
+		resp := &http.Response{
+			StatusCode: http.StatusUnauthorized,
+			Header:     header,
+		}
+
+		assert.False(t, respUnauthorizedNegotiate(resp))
+	})
+
+	t.Run("when server supports kerberos", func(t *testing.T) {
+		header.Add("WWW-Authenticate", "Negotiate")
+		resp := &http.Response{
+			StatusCode: http.StatusUnauthorized,
+			Header:     header,
+		}
+
+		assert.True(t, respUnauthorizedNegotiate(resp))
+	})
+}
+
 func TestService_SPNEGOKRB_Upload(t *testing.T) {
 	test.Integration(t)
 
