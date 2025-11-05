@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jcmturner/gokrb5/v8/credentials"
-	"github.com/jcmturner/gokrb5/v8/iana"
-	"github.com/jcmturner/gokrb5/v8/iana/etypeID"
-	"github.com/jcmturner/gokrb5/v8/iana/msgtype"
-	"github.com/jcmturner/gokrb5/v8/iana/nametype"
-	"github.com/jcmturner/gokrb5/v8/iana/patype"
-	"github.com/jcmturner/gokrb5/v8/keytab"
-	"github.com/jcmturner/gokrb5/v8/test/testdata"
+	"github.com/elastic/gokrb5/v8/credentials"
+	"github.com/elastic/gokrb5/v8/iana"
+	"github.com/elastic/gokrb5/v8/iana/etypeID"
+	"github.com/elastic/gokrb5/v8/iana/msgtype"
+	"github.com/elastic/gokrb5/v8/iana/nametype"
+	"github.com/elastic/gokrb5/v8/iana/patype"
+	"github.com/elastic/gokrb5/v8/keytab"
+	"github.com/elastic/gokrb5/v8/test/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
