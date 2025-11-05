@@ -17,14 +17,14 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/elastic/gokrb5/v8/client"
+	"github.com/elastic/gokrb5/v8/config"
+	"github.com/elastic/gokrb5/v8/keytab"
+	"github.com/elastic/gokrb5/v8/service"
+	"github.com/elastic/gokrb5/v8/test"
+	"github.com/elastic/gokrb5/v8/test/testdata"
 	"github.com/gorilla/sessions"
 	"github.com/jcmturner/goidentity/v6"
-	"github.com/jcmturner/gokrb5/v8/client"
-	"github.com/jcmturner/gokrb5/v8/config"
-	"github.com/jcmturner/gokrb5/v8/keytab"
-	"github.com/jcmturner/gokrb5/v8/service"
-	"github.com/jcmturner/gokrb5/v8/test"
-	"github.com/jcmturner/gokrb5/v8/test/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -284,6 +284,32 @@ func TestService_SPNEGOKRB_ReplayCache_Concurrency(t *testing.T) {
 		go httpGet(rr2, &wg2)
 	}
 	wg2.Wait()
+}
+
+func TestAuthHeader(t *testing.T) {
+	// server supports multiple auth
+	header := http.Header{}
+	header.Add("WWW-Authenticate", "ApiKey")
+	header.Add("WWW-Authenticate", "Basic realm")
+
+	t.Run("when server does not support kerberos", func(t *testing.T) {
+		resp := &http.Response{
+			StatusCode: http.StatusUnauthorized,
+			Header:     header,
+		}
+
+		assert.False(t, respUnauthorizedNegotiate(resp))
+	})
+
+	t.Run("when server supports kerberos", func(t *testing.T) {
+		header.Add("WWW-Authenticate", "Negotiate")
+		resp := &http.Response{
+			StatusCode: http.StatusUnauthorized,
+			Header:     header,
+		}
+
+		assert.True(t, respUnauthorizedNegotiate(resp))
+	})
 }
 
 func TestService_SPNEGOKRB_Upload(t *testing.T) {

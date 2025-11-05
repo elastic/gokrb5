@@ -10,18 +10,19 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"slices"
 	"strings"
 
+	"github.com/elastic/gokrb5/v8/client"
+	"github.com/elastic/gokrb5/v8/credentials"
+	"github.com/elastic/gokrb5/v8/gssapi"
+	"github.com/elastic/gokrb5/v8/iana/nametype"
+	"github.com/elastic/gokrb5/v8/keytab"
+	"github.com/elastic/gokrb5/v8/krberror"
+	"github.com/elastic/gokrb5/v8/service"
+	"github.com/elastic/gokrb5/v8/types"
 	"github.com/jcmturner/gofork/encoding/asn1"
 	"github.com/jcmturner/goidentity/v6"
-	"github.com/jcmturner/gokrb5/v8/client"
-	"github.com/jcmturner/gokrb5/v8/credentials"
-	"github.com/jcmturner/gokrb5/v8/gssapi"
-	"github.com/jcmturner/gokrb5/v8/iana/nametype"
-	"github.com/jcmturner/gokrb5/v8/keytab"
-	"github.com/jcmturner/gokrb5/v8/krberror"
-	"github.com/jcmturner/gokrb5/v8/service"
-	"github.com/jcmturner/gokrb5/v8/types"
 )
 
 // Client side functionality //
@@ -157,9 +158,9 @@ func (c *Client) Head(url string) (resp *http.Response, err error) {
 
 func respUnauthorizedNegotiate(resp *http.Response) bool {
 	if resp.StatusCode == http.StatusUnauthorized {
-		if resp.Header.Get(HTTPHeaderAuthResponse) == HTTPHeaderAuthResponseValueKey {
-			return true
-		}
+		// custom elastic code: See issue https://github.com/elastic/beats/issues/47110
+		authHeaders := resp.Header.Values(HTTPHeaderAuthResponse)
+		return slices.Contains(authHeaders, HTTPHeaderAuthResponseValueKey)
 	}
 	return false
 }
@@ -231,9 +232,9 @@ const (
 	// spnegoNegTokenRespIncompleteKRB5 - Response token specifying incomplete context and KRB5 as the supported mechtype.
 	spnegoNegTokenRespIncompleteKRB5 = "Negotiate oRQwEqADCgEBoQsGCSqGSIb3EgECAg=="
 	// sessionCredentials is the session value key holding the credentials jcmturner/goidentity/Identity object.
-	sessionCredentials = "github.com/jcmturner/gokrb5/v8/sessionCredentials"
+	sessionCredentials = "github.com/elastic/gokrb5/v8/sessionCredentials"
 	// ctxCredentials is the SPNEGO context key holding the credentials jcmturner/goidentity/Identity object.
-	ctxCredentials = "github.com/jcmturner/gokrb5/v8/ctxCredentials"
+	ctxCredentials = "github.com/elastic/gokrb5/v8/ctxCredentials"
 	// HTTPHeaderAuthRequest is the header that will hold authn/z information.
 	HTTPHeaderAuthRequest = "Authorization"
 	// HTTPHeaderAuthResponse is the header that will hold SPNEGO data from the server.
@@ -300,7 +301,6 @@ func SPNEGOKRB5Authenticate(inner http.Handler, kt *keytab.Keytab, settings ...f
 		}
 		// If we get to here we have not authenticationed so just reject
 		spnegoResponseReject(spnego, w, "%s - SPNEGO Kerberos authentication failed", r.RemoteAddr)
-		return
 	})
 }
 

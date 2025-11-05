@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/elastic/gokrb5/v8/client"
+	"github.com/elastic/gokrb5/v8/gssapi"
+	"github.com/elastic/gokrb5/v8/messages"
+	"github.com/elastic/gokrb5/v8/service"
+	"github.com/elastic/gokrb5/v8/types"
 	"github.com/jcmturner/gofork/encoding/asn1"
-	"github.com/jcmturner/gokrb5/v8/client"
-	"github.com/jcmturner/gokrb5/v8/gssapi"
-	"github.com/jcmturner/gokrb5/v8/messages"
-	"github.com/jcmturner/gokrb5/v8/service"
-	"github.com/jcmturner/gokrb5/v8/types"
 )
 
 // https://msdn.microsoft.com/en-us/library/ms995330.aspx
@@ -132,7 +132,7 @@ func (n *NegTokenInit) Verify() (bool, gssapi.Status) {
 		n.mechToken = mt
 	} else {
 		var ok bool
-		mt, ok = n.mechToken.(*KRB5Token)
+		_, ok = n.mechToken.(*KRB5Token)
 		if !ok {
 			return false, gssapi.Status{Code: gssapi.StatusDefectiveToken, Message: "MechToken is not a KRB5 token as expected"}
 		}
