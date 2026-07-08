@@ -8,6 +8,9 @@ on:
     paths:
       - 'v8/**'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Tests
